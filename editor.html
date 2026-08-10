@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>日记编辑器 — 我的日记</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/editor.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <header class="editor-header">
+    <div class="editor-header-left">
+      <a href="index.html" class="back-link">← 返回日记</a>
+      <a href="market-review.html" class="back-link" style="margin-left:12px;">📈 复盘</a>
+      <h1 class="editor-title">日记编辑器</h1>
+    </div>
+    <div class="editor-header-right">
+      <button id="btn-new" class="toolbar-btn toolbar-btn-primary">新建日记</button>
+      <button id="btn-import-json" class="toolbar-btn">导入 JSON</button>
+      <button id="btn-import-md" class="toolbar-btn">导入 Markdown</button>
+      <button id="btn-export-json" class="toolbar-btn">导出 JSON</button>
+      <button id="btn-export-md" class="toolbar-btn">导出 Markdown</button>
+      <button id="btn-reload" class="toolbar-btn toolbar-btn-muted" title="从 entries.json 重新加载（丢弃本地修改）">重新加载</button>
+    </div>
+  </header>
+
+  <div class="editor-layout" id="editor-layout">
+    <!-- 侧边栏：日记列表 -->
+    <aside class="editor-sidebar" id="editor-sidebar">
+      <div class="sidebar-search">
+        <input type="search" id="sidebar-search-input" class="sidebar-search-input" placeholder="搜索条目...">
+      </div>
+      <div class="sidebar-list" id="sidebar-list">
+        <div class="sidebar-loading">加载中...</div>
+      </div>
+      <div class="sidebar-status" id="sidebar-status">
+        <span id="entry-count">0 条日记</span>
+      </div>
+    </aside>
+
+    <!-- 主编辑区 -->
+    <main class="editor-main" id="editor-main">
+      <!-- 空状态：未选中条目 -->
+      <div class="editor-empty" id="editor-empty">
+        <div class="editor-empty-icon">📝</div>
+        <p>选择左侧条目开始编辑</p>
+        <p>或</p>
+        <button id="btn-new-empty" class="toolbar-btn toolbar-btn-primary">新建一篇日记</button>
+      </div>
+
+      <!-- 编辑表单 -->
+      <div class="editor-form" id="editor-form" style="display:none;">
+        <!-- 元数据行 -->
+        <div class="meta-row">
+          <div class="meta-field">
+            <label for="entry-date">日期</label>
+            <input type="date" id="entry-date" class="meta-input">
+          </div>
+          <div class="meta-field">
+            <label for="entry-mood">心情</label>
+            <select id="entry-mood" class="meta-input">
+              <option value="">无</option>
+              <option value="happy">😊 开心</option>
+              <option value="sad">😢 难过</option>
+              <option value="neutral">😐 平静</option>
+              <option value="excited">🎉 兴奋</option>
+              <option value="anxious">😰 焦虑</option>
+            </select>
+          </div>
+          <div class="meta-field meta-field-title">
+            <label for="entry-title">标题</label>
+            <input type="text" id="entry-title" class="meta-input" placeholder="日记标题（可选）">
+          </div>
+        </div>
+        <div class="meta-row">
+          <div class="meta-field meta-field-tags">
+            <label>标签</label>
+            <div class="tag-input-container" id="tag-input-container">
+              <div class="tag-chips" id="tag-chips"></div>
+              <input type="text" id="tag-add-input" class="tag-add-input" placeholder="输入标签，回车添加">
+            </div>
+          </div>
+        </div>
+
+        <!-- 编辑/预览区 -->
+        <div class="editor-panes">
+          <div class="pane pane-editor">
+            <div class="pane-header">
+              <span class="pane-title">Markdown 编辑</span>
+              <span class="save-indicator" id="save-indicator">已保存</span>
+            </div>
+            <textarea id="entry-content" class="content-textarea" placeholder="在此编写 Markdown 内容..."></textarea>
+          </div>
+          <div class="pane pane-preview">
+            <div class="pane-header">
+              <span class="pane-title">预览</span>
+            </div>
+            <div class="preview-content" id="preview-content"></div>
+          </div>
+        </div>
+
+        <!-- 移动端：编辑/预览切换 -->
+        <div class="mobile-pane-tabs" id="mobile-pane-tabs">
+          <button class="pane-tab active" data-pane="edit">编辑</button>
+          <button class="pane-tab" data-pane="preview">预览</button>
+        </div>
+
+        <!-- 操作栏 -->
+        <div class="editor-actions">
+          <span class="entry-id-label" id="entry-id-label"></span>
+          <button id="btn-delete" class="toolbar-btn toolbar-btn-danger">删除此日记</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 隐藏的文件输入 -->
+  <input type="file" id="file-input-json" accept=".json" style="display:none;">
+  <input type="file" id="file-input-md" accept=".md,.markdown,.txt" style="display:none;">
+
+  <script src="js/editor.js"></script>
+</body>
+</html>

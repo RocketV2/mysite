@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的日记</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      此网站需要 JavaScript 来渲染日记内容。请启用 JavaScript 后刷新页面。
+    </div>
+  </noscript>
+
+  <header class="site-header">
+    <div class="header-top">
+      <h1 class="site-title">我的日记</h1>
+      <div class="header-actions">
+        <a href="market-review.html" class="editor-link" title="市场复盘">📈 复盘</a>
+        <a href="editor.html" class="editor-link" title="打开编辑器">✏️ 编辑</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换暗色/亮色模式">
+          <span class="theme-icon-light">☀️</span>
+          <span class="theme-icon-dark">🌙</span>
+        </button>
+      </div>
+    </div>
+    <div class="header-controls">
+      <input type="search" id="search-input" class="search-input" placeholder="搜索日记...">
+      <div class="filter-row">
+        <select id="mood-filter" class="mood-select">
+          <option value="">全部心情</option>
+          <option value="happy">😊 开心</option>
+          <option value="sad">😢 难过</option>
+          <option value="neutral">😐 平静</option>
+          <option value="excited">🎉 兴奋</option>
+          <option value="anxious">😰 焦虑</option>
+        </select>
+        <div id="tag-filters" class="tag-filters"></div>
+      </div>
+      <button id="clear-filters" class="clear-filters-btn" style="display:none;">清除筛选</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="main-content">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+    <div id="error" class="error" style="display:none;">
+      <p>加载日记数据失败。</p>
+      <p>如果你在本地查看此页面，请尝试使用本地服务器：</p>
+      <code>python3 -m http.server 9898</code>
+      <p>然后访问 <a href="http://localhost:9898">http://localhost:9898</a></p>
+    </div>
+    <div id="entries-container" style="display:none;"></div>
+    <div id="no-results" class="no-results" style="display:none;">
+      <p>没有匹配的日记</p>
+      <button id="no-results-clear" class="clear-filters-btn">清除筛选</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>我的日记 — 纯静态个人日记网站</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

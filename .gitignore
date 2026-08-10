@@ -1,0 +1,10 @@
+# Claude Code
+.claude/
+memory/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
