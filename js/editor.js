@@ -780,14 +780,19 @@
   };
 
   function showMediaDialog() {
+    console.log("[media] showMediaDialog called, currentEntryId:", currentEntryId);
     if (!currentEntryId) {
+      console.log("[media] no entry selected, showing toast");
       showToast("请先选择或新建一篇日记", "error");
       return;
     }
+    var dialog = document.getElementById("media-dialog");
+    console.log("[media] dialog element:", dialog);
     mediaDialogState = { mediaType: "image", sourceTab: "url", fileDataUrl: null };
-    document.getElementById("media-dialog").style.display = "flex";
+    dialog.style.display = "flex";
     applyMediaType();
     switchSourceTab("url");
+    console.log("[media] dialog should be visible now");
   }
 
   function hideMediaDialog() {
