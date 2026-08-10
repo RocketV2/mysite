@@ -23,10 +23,53 @@
   var $noResultsClear = document.getElementById("no-results-clear");
 
   // ===== Markdown 渲染 =====
+  var markedConfigured = false;
+
+  function configureMarked() {
+    if (markedConfigured) return;
+    markedConfigured = true;
+    if (typeof marked === "undefined") return;
+
+    try {
+      // 自定义图片渲染：添加 loading="lazy"
+      var renderer = null;
+      // marked v5+: marked.Renderer 仍然是构造函数
+      if (typeof marked.Renderer === "function") {
+        renderer = new marked.Renderer();
+      }
+
+      if (renderer) {
+        var origImage = renderer.image.bind(renderer);
+        renderer.image = function (href, title, text) {
+          var titleAttr = title ? ' title="' + title + '"' : "";
+          return (
+            '<img src="' +
+            href +
+            '" alt="' +
+            (text || "") +
+            '"' +
+            titleAttr +
+            ' loading="lazy">'
+          );
+        };
+
+        // marked v5+ 使用 marked.use()，v4 使用 marked.setOptions()
+        if (typeof marked.use === "function") {
+          marked.use({ renderer: renderer });
+        } else if (typeof marked.setOptions === "function") {
+          marked.setOptions({ renderer: renderer });
+        }
+      }
+    } catch (e) {
+      console.warn("Markdown 配置失败:", e);
+    }
+  }
+
   function renderMarkdown(text) {
     if (!text) return "";
     try {
       if (typeof marked !== "undefined") {
+        configureMarked();
         // marked v5+ 使用 marked.parse()，v4 及以下使用 marked()
         if (typeof marked.parse === "function") {
           return marked.parse(text);
@@ -463,6 +506,36 @@
         window.location.hash = "#/entry/" + card.dataset.id;
       }
     }
+  });
+
+  // 图片 Lightbox：点击 entry-content 中的图片放大
+  $entriesContainer.addEventListener("click", function (e) {
+    var img = e.target.closest(".entry-content img");
+    if (!img) return;
+    e.preventDefault();
+
+    var overlay = document.createElement("div");
+    overlay.className = "lightbox-overlay";
+
+    var cloned = document.createElement("img");
+    cloned.src = img.src;
+    cloned.alt = img.alt || "";
+    overlay.appendChild(cloned);
+
+    overlay.addEventListener("click", function () {
+      document.body.removeChild(overlay);
+    });
+
+    // ESC 关闭
+    var escHandler = function (ev) {
+      if (ev.key === "Escape") {
+        document.body.removeChild(overlay);
+        document.removeEventListener("keydown", escHandler);
+      }
+    };
+    document.addEventListener("keydown", escHandler);
+
+    document.body.appendChild(overlay);
   });
 
   // ===== 启动 =====

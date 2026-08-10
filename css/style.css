@@ -474,6 +474,26 @@ details[open] > .entry-summary::before {
 .entry-content img {
   max-width: 100%;
   border-radius: var(--radius);
+  display: block;
+  margin: 12px auto;
+  cursor: zoom-in;
+  transition: transform 0.2s;
+}
+.entry-content img:hover {
+  transform: scale(1.02);
+}
+.entry-content video {
+  max-width: 100%;
+  border-radius: var(--radius);
+  display: block;
+  margin: 12px auto;
+  outline: none;
+}
+.entry-content audio {
+  display: block;
+  max-width: 100%;
+  margin: 8px auto;
+  outline: none;
 }
 
 .entry-tags {
@@ -548,6 +568,32 @@ details[open] > .entry-summary::before {
   .entry-title {
     font-size: 0.95rem;
   }
+}
+
+/* ===== 图片 Lightbox ===== */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+  animation: lightbox-in 0.2s ease-out;
+}
+
+.lightbox-overlay img {
+  max-width: 92vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes lightbox-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ===== 打印样式 ===== */

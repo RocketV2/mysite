@@ -32,14 +32,57 @@
   var $entryCount = document.getElementById("entry-count");
   var $fileInputJson = document.getElementById("file-input-json");
   var $fileInputMd = document.getElementById("file-input-md");
+  var $fileInputImage = document.getElementById("file-input-image");
+  var $fileInputVideo = document.getElementById("file-input-video");
+  var $fileInputAudio = document.getElementById("file-input-audio");
   var $mobilePaneTabs = document.getElementById("mobile-pane-tabs");
   var $toastContainer = document.getElementById("toast-container");
 
   // ===== Markdown 渲染（与 main.js 一致） =====
+  var markedConfigured = false;
+
+  function configureMarked() {
+    if (markedConfigured) return;
+    markedConfigured = true;
+    if (typeof marked === "undefined") return;
+
+    try {
+      var renderer = null;
+      if (typeof marked.Renderer === "function") {
+        renderer = new marked.Renderer();
+      }
+
+      if (renderer) {
+        var origImage = renderer.image.bind(renderer);
+        renderer.image = function (href, title, text) {
+          var titleAttr = title ? ' title="' + title + '"' : "";
+          return (
+            '<img src="' +
+            href +
+            '" alt="' +
+            (text || "") +
+            '"' +
+            titleAttr +
+            ' loading="lazy">'
+          );
+        };
+
+        if (typeof marked.use === "function") {
+          marked.use({ renderer: renderer });
+        } else if (typeof marked.setOptions === "function") {
+          marked.setOptions({ renderer: renderer });
+        }
+      }
+    } catch (e) {
+      console.warn("Markdown 配置失败:", e);
+    }
+  }
+
   function renderMarkdown(text) {
     if (!text) return "";
     try {
       if (typeof marked !== "undefined") {
+        configureMarked();
         if (typeof marked.parse === "function") {
           return marked.parse(text);
         } else if (typeof marked === "function") {
@@ -684,6 +727,212 @@
     }
   });
 
+  // 在光标处插入文本
+  function insertTextAtCursor(text) {
+    var start = $entryContent.selectionStart;
+    var end = $entryContent.selectionEnd;
+    var before = $entryContent.value.substring(0, start);
+    var after = $entryContent.value.substring(end);
+    $entryContent.value = before + text + after;
+    $entryContent.selectionStart = $entryContent.selectionEnd = start + text.length;
+    $entryContent.focus();
+    markDirty();
+    debouncedPreview();
+  }
+
+  // ===== 媒体插入弹窗 =====
+  var mediaDialogState = { mediaType: "image", sourceTab: "url", fileDataUrl: null };
+
+  var MEDIA_CONFIG = {
+    image: {
+      label: "图片",
+      urlPlaceholder: "https://example.com/photo.jpg",
+      pathPlaceholder: "data/images/photo.jpg",
+      pathHint: "将图片放入 <code>data/images/</code> 目录，然后输入相对路径：",
+      fileHint: "转换为 Base64 内嵌（适合小图）",
+      fileAccept: "image/*",
+      fileInputId: "file-input-image",
+      sizeLimit: 500, // KB
+      format: function (url, alt) { return alt ? "![" + alt + "](" + url + ")" : "![" + url + "](" + url + ")"; },
+    },
+    video: {
+      label: "视频",
+      urlPlaceholder: "https://example.com/video.mp4",
+      pathPlaceholder: "data/videos/demo.mp4",
+      pathHint: "将视频放入仓库目录（如 <code>data/videos/</code>），然后输入相对路径：",
+      fileHint: "转换为 Base64 内嵌（仅适合极小视频，建议用路径方式）",
+      fileAccept: "video/*",
+      fileInputId: "file-input-video",
+      sizeLimit: 1024,
+      format: function (url) { return '<video src="' + url + '" controls></video>'; },
+    },
+    audio: {
+      label: "音频",
+      urlPlaceholder: "https://example.com/music.mp3",
+      pathPlaceholder: "data/audios/podcast.mp3",
+      pathHint: "将音频放入仓库目录（如 <code>data/audios/</code>），然后输入相对路径：",
+      fileHint: "转换为 Base64 内嵌（仅适合短音频，建议用路径方式）",
+      fileAccept: "audio/*",
+      fileInputId: "file-input-audio",
+      sizeLimit: 1024,
+      format: function (url) { return '<audio src="' + url + '" controls></audio>'; },
+    },
+  };
+
+  function showMediaDialog() {
+    if (!currentEntryId) {
+      showToast("请先选择或新建一篇日记", "error");
+      return;
+    }
+    mediaDialogState = { mediaType: "image", sourceTab: "url", fileDataUrl: null };
+    document.getElementById("media-dialog").style.display = "flex";
+    applyMediaType();
+    switchSourceTab("url");
+  }
+
+  function hideMediaDialog() {
+    document.getElementById("media-dialog").style.display = "none";
+  }
+
+  function applyMediaType() {
+    var cfg = MEDIA_CONFIG[mediaDialogState.mediaType];
+    // 更新媒体类型标签高亮
+    document.querySelectorAll("#media-type-tabs .image-dialog-tab").forEach(function (t) {
+      t.classList.toggle("active", t.dataset.media === mediaDialogState.mediaType);
+    });
+    // 更新占位符和提示文字
+    document.getElementById("media-url-input").placeholder = cfg.urlPlaceholder;
+    document.getElementById("media-path-input").placeholder = cfg.pathPlaceholder;
+    document.getElementById("media-path-hint").innerHTML = cfg.pathHint;
+    document.getElementById("media-file-hint").textContent = cfg.fileHint;
+    document.getElementById("media-file-warning").style.display = "none";
+    // 重置文件选择
+    mediaDialogState.fileDataUrl = null;
+    document.getElementById("media-file-drop").innerHTML =
+      "<p>点击选择" + cfg.label + "文件</p>" +
+      '<p class="image-file-hint" id="media-file-hint">' + cfg.fileHint + "</p>";
+    // 清空输入
+    document.getElementById("media-url-input").value = "";
+    document.getElementById("media-url-alt").value = "";
+    document.getElementById("media-path-input").value = "";
+    document.getElementById("media-path-alt").value = "";
+  }
+
+  function switchSourceTab(tab) {
+    mediaDialogState.sourceTab = tab;
+    document.querySelectorAll("#media-source-tabs .image-dialog-tab").forEach(function (t) {
+      t.classList.toggle("active", t.dataset.tab === tab);
+    });
+    document.getElementById("panel-url").style.display = tab === "url" ? "block" : "none";
+    document.getElementById("panel-file").style.display = tab === "file" ? "block" : "none";
+    document.getElementById("panel-path").style.display = tab === "path" ? "block" : "none";
+    if (tab === "url") document.getElementById("media-url-input").focus();
+    if (tab === "path") document.getElementById("media-path-input").focus();
+  }
+
+  function handleMediaFileSelect(file) {
+    if (!file) return;
+    var cfg = MEDIA_CONFIG[mediaDialogState.mediaType];
+    if (file.size > cfg.sizeLimit * 1024) {
+      document.getElementById("media-file-warning").style.display = "block";
+    } else {
+      document.getElementById("media-file-warning").style.display = "none";
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      mediaDialogState.fileDataUrl = e.target.result;
+      var drop = document.getElementById("media-file-drop");
+      drop.innerHTML =
+        '<p style="color:var(--color-accent);font-weight:600;">已选择: ' +
+        escapeHtml(file.name) +
+        "</p>" +
+        '<p class="image-file-hint">' +
+        (file.size / 1024).toFixed(1) +
+        " KB — 点击重新选择</p>";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function insertMedia() {
+    var cfg = MEDIA_CONFIG[mediaDialogState.mediaType];
+    var tab = mediaDialogState.sourceTab;
+    var alt, url;
+
+    if (tab === "url") {
+      url = document.getElementById("media-url-input").value.trim();
+      alt = document.getElementById("media-url-alt").value.trim();
+      if (!url) { showToast("请输入 URL", "error"); return; }
+    } else if (tab === "file") {
+      if (!mediaDialogState.fileDataUrl) { showToast("请选择文件", "error"); return; }
+      url = mediaDialogState.fileDataUrl;
+      alt = "";
+    } else if (tab === "path") {
+      url = document.getElementById("media-path-input").value.trim();
+      alt = document.getElementById("media-path-alt").value.trim();
+      if (!url) { showToast("请输入路径", "error"); return; }
+    }
+
+    var md = cfg.format(url, alt);
+    insertTextAtCursor(md);
+    hideMediaDialog();
+    showToast(cfg.label + "已插入", "success");
+  }
+
+  function getActiveFileInput() {
+    var cfg = MEDIA_CONFIG[mediaDialogState.mediaType];
+    return document.getElementById(cfg.fileInputId);
+  }
+
+  // 弹窗事件绑定
+  document.getElementById("btn-insert-media").addEventListener("click", showMediaDialog);
+
+  document.getElementById("btn-media-cancel").addEventListener("click", hideMediaDialog);
+
+  document.getElementById("media-dialog").addEventListener("click", function (e) {
+    if (e.target === document.getElementById("media-dialog")) {
+      hideMediaDialog();
+    }
+  });
+
+  document.getElementById("btn-media-insert").addEventListener("click", insertMedia);
+
+  // 媒体类型切换
+  document.getElementById("media-type-tabs").addEventListener("click", function (e) {
+    var tab = e.target.closest(".image-dialog-tab");
+    if (!tab) return;
+    mediaDialogState.mediaType = tab.dataset.media;
+    applyMediaType();
+  });
+
+  // 来源 Tab 切换
+  document.getElementById("media-source-tabs").addEventListener("click", function (e) {
+    var tab = e.target.closest(".image-dialog-tab");
+    if (!tab) return;
+    switchSourceTab(tab.dataset.tab);
+  });
+
+  // 文件拖放区域：点击触发文件选择
+  document.getElementById("media-file-drop").addEventListener("click", function () {
+    getActiveFileInput().click();
+  });
+
+  // 三个文件输入
+  [$fileInputImage, $fileInputVideo, $fileInputAudio].forEach(function (input) {
+    input.addEventListener("change", function () {
+      if (input.files && input.files[0]) {
+        handleMediaFileSelect(input.files[0]);
+        input.value = "";
+      }
+    });
+  });
+
+  // 键盘：Enter 在输入框中直接插入
+  ["media-url-input", "media-url-alt", "media-path-input", "media-path-alt"].forEach(function (id) {
+    document.getElementById(id).addEventListener("keydown", function (e) {
+      if (e.key === "Enter") insertMedia();
+    });
+  });
+
   // 顶部按钮
   document.getElementById("btn-new").addEventListener("click", createNewEntry);
   document.getElementById("btn-new-empty").addEventListener("click", createNewEntry);
@@ -736,6 +985,35 @@
     if (window.innerWidth > 860) {
       $editorLayout.classList.remove("show-preview");
     }
+  });
+
+  // 预览区图片 Lightbox
+  $previewContent.addEventListener("click", function (e) {
+    var img = e.target.closest("img");
+    if (!img) return;
+    e.preventDefault();
+
+    var overlay = document.createElement("div");
+    overlay.className = "lightbox-overlay";
+
+    var cloned = document.createElement("img");
+    cloned.src = img.src;
+    cloned.alt = img.alt || "";
+    overlay.appendChild(cloned);
+
+    overlay.addEventListener("click", function () {
+      document.body.removeChild(overlay);
+    });
+
+    var escHandler = function (ev) {
+      if (ev.key === "Escape") {
+        document.body.removeChild(overlay);
+        document.removeEventListener("keydown", escHandler);
+      }
+    };
+    document.addEventListener("keydown", escHandler);
+
+    document.body.appendChild(overlay);
   });
 
   // 离开页面前自动保存

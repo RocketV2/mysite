@@ -88,7 +88,10 @@
           <div class="pane pane-editor">
             <div class="pane-header">
               <span class="pane-title">Markdown 编辑</span>
-              <span class="save-indicator" id="save-indicator">已保存</span>
+              <div class="pane-header-actions">
+                <button id="btn-insert-media" class="toolbar-btn toolbar-btn-sm" title="插入媒体">🎬 媒体</button>
+                <span class="save-indicator" id="save-indicator">已保存</span>
+              </div>
             </div>
             <textarea id="entry-content" class="content-textarea" placeholder="在此编写 Markdown 内容..."></textarea>
           </div>
@@ -121,6 +124,51 @@
   <!-- 隐藏的文件输入 -->
   <input type="file" id="file-input-json" accept=".json" style="display:none;">
   <input type="file" id="file-input-md" accept=".md,.markdown,.txt" style="display:none;">
+  <input type="file" id="file-input-image" accept="image/*" style="display:none;">
+  <input type="file" id="file-input-video" accept="video/*" style="display:none;">
+  <input type="file" id="file-input-audio" accept="audio/*" style="display:none;">
+
+  <!-- 媒体插入弹窗 -->
+  <div class="image-dialog-overlay" id="media-dialog" style="display:none;">
+    <div class="image-dialog">
+      <h3 class="image-dialog-title">插入媒体</h3>
+      <!-- 媒体类型选择 -->
+      <div class="image-dialog-tabs" id="media-type-tabs">
+        <button class="image-dialog-tab active" data-media="image">🖼 图片</button>
+        <button class="image-dialog-tab" data-media="video">🎬 视频</button>
+        <button class="image-dialog-tab" data-media="audio">🎵 音频</button>
+      </div>
+      <!-- 来源选择 -->
+      <div class="image-dialog-tabs" id="media-source-tabs" style="margin-top:4px; border-bottom:1px solid var(--color-border);">
+        <button class="image-dialog-tab active" data-tab="url">🔗 粘贴 URL</button>
+        <button class="image-dialog-tab" data-tab="file">📁 选择文件</button>
+        <button class="image-dialog-tab" data-tab="path">📂 仓库路径</button>
+      </div>
+      <!-- Tab: URL -->
+      <div class="image-dialog-panel" id="panel-url">
+        <input type="text" id="media-url-input" class="image-dialog-input" placeholder="">
+        <input type="text" id="media-url-alt" class="image-dialog-input" placeholder="描述文本（可选）">
+      </div>
+      <!-- Tab: 文件 -->
+      <div class="image-dialog-panel" id="panel-file" style="display:none;">
+        <div class="image-file-drop" id="media-file-drop">
+          <p>点击选择文件</p>
+          <p class="image-file-hint" id="media-file-hint">转换为 Base64 内嵌（适合小文件）</p>
+        </div>
+        <p class="image-warning" id="media-file-warning" style="display:none;">⚠ 文件较大，建议使用仓库路径方式存储</p>
+      </div>
+      <!-- Tab: 路径 -->
+      <div class="image-dialog-panel" id="panel-path" style="display:none;">
+        <p class="image-path-hint" id="media-path-hint">将文件放入仓库目录，然后输入相对路径：</p>
+        <input type="text" id="media-path-input" class="image-dialog-input" placeholder="">
+        <input type="text" id="media-path-alt" class="image-dialog-input" placeholder="描述文本（可选）">
+      </div>
+      <div class="image-dialog-actions">
+        <button class="toolbar-btn" id="btn-media-cancel">取消</button>
+        <button class="toolbar-btn toolbar-btn-primary" id="btn-media-insert">插入</button>
+      </div>
+    </div>
+  </div>
 
   <script src="js/editor.js"></script>
 </body>
