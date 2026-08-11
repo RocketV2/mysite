@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>认知 — 我的日记</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cognition.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="cog-page">
+  <noscript>
+    <div class="noscript-banner">
+      此网站需要 JavaScript 来渲染内容。请启用 JavaScript 后刷新页面。
+    </div>
+  </noscript>
+
+  <header class="cog-header">
+    <div class="cog-header-top">
+      <div class="cog-header-left">
+        <a href="index.html" class="cog-back-link">← 返回日记</a>
+        <h1 class="cog-site-title">认知</h1>
+      </div>
+      <div class="cog-header-actions">
+        <button id="btn-categories" class="cog-btn" title="管理分类">📂 分类</button>
+        <button id="btn-new" class="cog-btn cog-btn-primary" title="新建短文">✏️ 新建</button>
+        <button id="btn-import" class="cog-btn" title="导入 JSON 文件">📥 导入</button>
+        <button id="btn-export" class="cog-btn" title="导出为 JSON 文件">📤 导出</button>
+        <button id="btn-reload" class="cog-btn" title="从 cognition.json 重新加载">🔄 重置</button>
+        <button id="theme-toggle" class="cog-theme-toggle" aria-label="切换暗色/亮色模式">
+          <span class="theme-icon-light">☀️</span>
+          <span class="theme-icon-dark">🌙</span>
+        </button>
+      </div>
+    </div>
+    <div class="cog-controls">
+      <div class="cog-search-row">
+        <input type="search" id="search-input" class="cog-search-input" placeholder="搜索认知短文...">
+        <div class="cog-mode-switch">
+          <button id="mode-reader" class="cog-mode-btn active" data-mode="reader">单篇精读</button>
+          <button id="mode-browse" class="cog-mode-btn" data-mode="browse">快速浏览</button>
+        </div>
+      </div>
+      <div class="cog-filter-row">
+        <select id="category-filter" class="cog-select">
+          <option value="">全部分类</option>
+        </select>
+        <input type="date" id="date-from" class="cog-date-input" title="开始日期">
+        <span class="cog-date-sep">至</span>
+        <input type="date" id="date-to" class="cog-date-input" title="结束日期">
+        <button id="btn-clear-filters" class="cog-btn" style="display:none;">清除筛选</button>
+        <span id="result-count" class="cog-result-count"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="cog-main" id="main-content">
+    <div id="loading" class="cog-loading">
+      <div class="cog-spinner"></div>
+      <p>加载中...</p>
+    </div>
+    <div id="error" class="cog-error" style="display:none;">
+      <p>加载认知数据失败。</p>
+      <p>请确保通过 HTTP 服务访问：</p>
+      <code>python3 -m http.server 9898</code>
+    </div>
+    <div id="content-area" style="display:none;"></div>
+    <div id="empty-state" class="cog-empty" style="display:none;">
+      <div class="cog-empty-icon">📖</div>
+      <p>这里还没有内容</p>
+      <p>点击「新建」写一篇短文，或「导入」JSON 数据</p>
+    </div>
+  </main>
+
+  <footer class="cog-footer">
+    <p>我的日记 — 认知模块</p>
+  </footer>
+
+  <!-- 分类管理弹窗 -->
+  <div id="modal-categories" class="cog-modal-overlay" style="display:none;">
+    <div class="cog-modal">
+      <div class="cog-modal-header">
+        <span class="cog-modal-title">分类管理</span>
+        <button class="cog-modal-close" id="modal-cat-close">✕</button>
+      </div>
+      <div class="cog-modal-body">
+        <div class="cog-category-list" id="category-list"></div>
+        <button id="btn-add-category" class="cog-btn cog-btn-primary" style="margin-top:12px;width:100%;">➕ 新增分类</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 分类编辑弹窗 -->
+  <div id="modal-category-edit" class="cog-modal-overlay" style="display:none;">
+    <div class="cog-modal">
+      <div class="cog-modal-header">
+        <span class="cog-modal-title" id="modal-cat-edit-title">编辑分类</span>
+        <button class="cog-modal-close" id="modal-cat-edit-close">✕</button>
+      </div>
+      <div class="cog-modal-body">
+        <div class="cog-form-group">
+          <label class="cog-form-label">名称</label>
+          <input type="text" id="cat-edit-name" class="cog-form-input" placeholder="分类名称">
+        </div>
+        <div class="cog-form-group">
+          <label class="cog-form-label">图标（Emoji）</label>
+          <input type="text" id="cat-edit-icon" class="cog-form-input" placeholder="📈">
+        </div>
+        <div class="cog-form-group">
+          <label class="cog-form-label">颜色</label>
+          <div class="cog-color-picker" id="cat-color-picker">
+            <span class="cog-color-dot" data-color="#d4915c" style="background:#d4915c;"></span>
+            <span class="cog-color-dot" data-color="#6ba87a" style="background:#6ba87a;"></span>
+            <span class="cog-color-dot" data-color="#b08bbb" style="background:#b08bbb;"></span>
+            <span class="cog-color-dot" data-color="#6b9ec8" style="background:#6b9ec8;"></span>
+            <span class="cog-color-dot" data-color="#d46b6b" style="background:#d46b6b;"></span>
+            <span class="cog-color-dot" data-color="#cb9c4d" style="background:#cb9c4d;"></span>
+            <span class="cog-color-dot" data-color="#5e9fa3" style="background:#5e9fa3;"></span>
+            <span class="cog-color-dot" data-color="#8b9dc3" style="background:#8b9dc3;"></span>
+            <span class="cog-color-dot" data-color="#a8886c" style="background:#a8886c;"></span>
+            <span class="cog-color-dot" data-color="#c07a9c" style="background:#c07a9c;"></span>
+          </div>
+          <input type="hidden" id="cat-edit-color" value="#d4915c">
+        </div>
+      </div>
+      <div class="cog-modal-footer">
+        <button id="btn-cat-save" class="cog-btn cog-btn-primary">保存</button>
+        <button id="btn-cat-cancel" class="cog-btn">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 条目编辑弹窗 -->
+  <div id="modal-entry-edit" class="cog-modal-overlay" style="display:none;">
+    <div class="cog-modal" style="max-width:680px;">
+      <div class="cog-modal-header">
+        <span class="cog-modal-title" id="modal-entry-title">编辑短文</span>
+        <button class="cog-modal-close" id="modal-entry-close">✕</button>
+      </div>
+      <div class="cog-modal-body">
+        <div class="cog-form-row">
+          <div class="cog-form-group">
+            <label class="cog-form-label">日期</label>
+            <input type="date" id="entry-edit-date" class="cog-form-input">
+          </div>
+          <div class="cog-form-group">
+            <label class="cog-form-label">分类</label>
+            <select id="entry-edit-category" class="cog-form-input"></select>
+          </div>
+        </div>
+        <div class="cog-form-group">
+          <label class="cog-form-label">标题</label>
+          <input type="text" id="entry-edit-title" class="cog-form-input" placeholder="短文标题">
+        </div>
+        <div class="cog-form-group">
+          <label class="cog-form-label">内容（支持 Markdown）</label>
+          <textarea id="entry-edit-content" class="cog-form-textarea" placeholder="写点什么..."></textarea>
+        </div>
+      </div>
+      <div class="cog-modal-footer">
+        <button id="btn-entry-delete" class="cog-btn cog-btn-sm-danger" style="margin-right:auto;">🗑 删除</button>
+        <button id="btn-entry-save" class="cog-btn cog-btn-primary">保存</button>
+        <button id="btn-entry-cancel" class="cog-btn">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div id="modal-confirm" class="cog-modal-overlay" style="display:none;">
+    <div class="cog-modal" style="max-width:380px;">
+      <div class="cog-modal-header">
+        <span class="cog-modal-title">确认操作</span>
+        <button class="cog-modal-close" id="modal-confirm-close">✕</button>
+      </div>
+      <div class="cog-modal-body">
+        <p class="cog-confirm-text" id="confirm-text"></p>
+      </div>
+      <div class="cog-modal-footer">
+        <button id="btn-confirm-yes" class="cog-btn cog-btn-primary">确认</button>
+        <button id="btn-confirm-no" class="cog-btn">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 导入弹窗 -->
+  <div id="modal-import" class="cog-modal-overlay" style="display:none;">
+    <div class="cog-modal" style="max-width:420px;">
+      <div class="cog-modal-header">
+        <span class="cog-modal-title">导入 JSON</span>
+        <button class="cog-modal-close" id="modal-import-close">✕</button>
+      </div>
+      <div class="cog-modal-body">
+        <p style="color:var(--cog-text-secondary);margin-bottom:16px;font-size:0.9rem;">
+          导入 JSON 文件中的条目。已存在的条目（相同 ID）将被更新，新条目将追加。
+        </p>
+        <label class="cog-import-zone" id="import-zone">
+          <div class="cog-import-icon">📁</div>
+          <p>点击选择或拖拽 JSON 文件到此处</p>
+          <input type="file" id="file-input" accept=".json" style="display:none;">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div class="cog-toast-container" id="toast-container"></div>
+
+  <script src="js/cognition.js"></script>
+</body>
+</html>
