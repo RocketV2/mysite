@@ -8,3 +8,6 @@ memory/
 # IDE
 .vscode/
 .idea/
+
+# Node (tools)
+node_modules/

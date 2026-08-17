@@ -11,11 +11,15 @@
 ## 用法
 
 ```bash
-npm i cheerio   # 首次
-# 1) 编辑 scrape-topic.js 顶部的 TOPIC_PATH（帖子 URL /a/xxx 部分）与 HOST_NAME（楼主昵称）
-node scrape-topic.js        # 输出 raw_posts.jsonl（主帖 + 全部回帖，含非楼主）与 raw_main.json
-# 2) 编辑 build-trades-data.js 顶部的 ID / SOURCE / HOST_NAME / 标题与描述
-node build-trades-data.js   # 生成 data/trades/index.json 与 data/trades/<id>.json
+npm install   # 首次（安装 cheerio）
+# 1) 抓取：<TOPIC_PATH> 为帖子 URL /a/xxx-页码 中的 xxx，<楼主昵称> 为发帖人名字，<前缀> 为输出文件名前缀
+node scrape-topic.js 1ykz00lu2SS 骑在牛股上 niugu
+#    输出 <前缀>.jsonl（主帖 + 全部回帖，含非楼主）与 <前缀>_main.json
+# 2) 构建数据：<ID> 遵循 YYYY-MM-DD-<作者拼音>-<主题缩写>；描述不带日期（脚本自动追加日期与帖数）
+node build-trades-data.js niugu 2014-08-28-qizainiugu-500w \
+  "https://www.tgb.cn/a/1ykz00lu2SS-1?type=Z" 骑在牛股上 \
+  "骑在牛股上-五百万实盘&龙头妖股战法" "骑在牛股上 五百万实盘贴，龙头妖股战法。"
+#    生成 data/trades/<id>.json，并合并（按 id 覆盖）进 data/trades/index.json
 ```
 
 ## 数据格式

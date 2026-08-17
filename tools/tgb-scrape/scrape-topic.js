@@ -1,14 +1,16 @@
 // 抓取淘股吧帖子全部回帖（移动版页面服务端渲染回帖列表，每页 10 条，末页在首页的"末页"链接中解析）
-// 用法：修改下方 TOPIC_PATH / HOST_NAME，运行 `node tools/tgb-scrape/scrape-topic.js`（需先 npm i cheerio）
+// 用法：node tools/tgb-scrape/scrape-topic.js <TOPIC_PATH> <楼主昵称> [输出文件前缀]（需先 npm i cheerio）
+//   例：node tools/tgb-scrape/scrape-topic.js 1ykz00lu2SS 骑在牛股上 niugu
 const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 
 const BASE = 'https://m.tgb.cn';
-const TOPIC_PATH = '1VR3vfnvPms'; // 主题路径 ID（帖子 URL /a/<TOPIC_PATH>-<页码> 中的部分）
-const HOST_NAME = '水哥割股';     // 楼主昵称，脚本只保留楼主的发言
+const TOPIC_PATH = process.argv[2] || '1VR3vfnvPms'; // 主题路径 ID（帖子 URL /a/<TOPIC_PATH>-<页码> 中的部分）
+const HOST_NAME = process.argv[3] || '水哥割股';     // 楼主昵称，脚本只保留楼主的发言
+const OUT_PREFIX = process.argv[4] || 'raw_posts';
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1';
-const OUT = path.join(__dirname, 'raw_posts.jsonl');
+const OUT = path.join(__dirname, OUT_PREFIX + '.jsonl');
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -151,7 +153,7 @@ async function main() {
   const failed = Object.entries(results).filter(([, v]) => v && v.err);
   console.log(`完成。总回帖 ${total} 条，其中楼主 ${hostCount} 条；失败页: ${failed.length}`);
   if (failed.length) console.log(failed.slice(0, 20).map(([p, v]) => `p${p}: ${v.err}`).join('\n'));
-  fs.writeFileSync(path.join(__dirname, 'raw_main.json'), JSON.stringify(first.mainPost, null, 2));
+  fs.writeFileSync(path.join(__dirname, OUT_PREFIX + '_main.json'), JSON.stringify(first.mainPost, null, 2));
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

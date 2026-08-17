@@ -1,0 +1,8 @@
+{
+  "name": "tgb-scrape",
+  "private": true,
+  "description": "淘股吧移动版实盘贴抓取工具",
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}
