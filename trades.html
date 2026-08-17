@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实盘记录</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/trades.css?v=2">
+</head>
+<body>
+  <noscript>
+    <div class="noscript-banner">
+      此网站需要 JavaScript 来渲染实盘记录内容。请启用 JavaScript 后刷新页面。
+    </div>
+  </noscript>
+
+  <header class="site-header">
+    <div class="header-top">
+      <h1 class="site-title">实盘记录</h1>
+      <div class="header-actions">
+        <a href="index.html" class="editor-link" title="返回日记">📔 日记</a>
+        <a href="cognition.html" class="editor-link" title="认知短文">🧠 认知</a>
+        <a href="market-review.html" class="editor-link" title="市场复盘">📊 复盘</a>
+        <a href="editor.html" class="editor-link" title="打开编辑器">✏️ 编辑</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="切换暗色/亮色模式">
+          <span class="theme-icon-light">☀️</span>
+          <span class="theme-icon-dark">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+    <div id="error" class="error" style="display:none;">
+      <p>加载实盘记录数据失败。</p>
+      <p>如果你在本地查看此页面，请尝试使用本地服务器：</p>
+      <code>python3 -m http.server 9898</code>
+      <p>然后访问 <a href="http://localhost:9898/trades.html">http://localhost:9898/trades.html</a></p>
+    </div>
+
+    <!-- 列表视图 -->
+    <section id="list-view" style="display:none;" aria-label="实盘记录列表">
+      <p class="trades-hint">收录淘股吧实盘选手的完整发帖记录（仅楼主发言），点击卡片进入详情。</p>
+      <div id="trade-list"></div>
+    </section>
+
+    <!-- 详情视图 -->
+    <section id="detail-view" style="display:none;" aria-label="实盘详情">
+      <a id="detail-back" class="back-link" href="#/">← 返回列表</a>
+      <div id="detail-body"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>我的日记 — 实盘记录模块 · 数据来源：淘股吧</p>
+  </footer>
+
+  <script src="js/trades.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+/* ===== 实盘记录模块 ===== */
+
+.trades-hint {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-bottom: 16px;
+}
+
+/* ===== 列表卡片 ===== */
+.trade-card {
+  display: block;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  color: var(--color-text);
+  text-decoration: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.trade-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.trade-card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+.trade-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.trade-author {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  background: var(--color-tag-bg);
+  color: var(--color-tag-text);
+}
+
+.trade-card-desc {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== 详情页 ===== */
+.back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: var(--color-accent);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.trade-detail-head {
+  margin-bottom: 16px;
+}
+
+.trade-detail-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.trade-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.trade-detail-meta .source-link {
+  color: var(--color-accent);
+}
+
+/* ===== 筛选栏 ===== */
+.trade-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+.filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.filter-select,
+.filter-date {
+  padding: 5px 8px;
+  font-size: 0.88rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus,
+.filter-date:focus {
+  border-color: var(--color-accent);
+}
+
+.filter-clear {
+  padding: 5px 14px;
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.filter-clear:hover {
+  background: var(--color-tag-bg);
+  color: var(--color-accent);
+}
+
+/* ===== 帖子卡片 ===== */
+.trade-posts {
+  margin-top: 16px;
+}
+
+.month-divider {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin: 20px 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.post-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 14px 18px;
+  margin-bottom: 10px;
+}
+
+.post-card.main-post {
+  border-color: var(--color-accent);
+}
+
+.post-card-time {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin-bottom: 8px;
+}
+
+.post-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+  border-radius: 10px;
+  background: var(--color-tag-active-bg);
+  color: var(--color-tag-active-text);
+}
+
+.post-content {
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+/* 复用主站正文排版（图片、引用、代码等） */
+.post-content h2 { font-size: 1.2rem; margin: 16px 0 8px; }
+.post-content h3 { font-size: 1.05rem; margin: 12px 0 6px; }
+.post-content p { margin-bottom: 10px; }
+.post-content ul, .post-content ol { margin: 8px 0; padding-left: 24px; }
+.post-content li { margin-bottom: 4px; }
+.post-content a { color: var(--color-accent); }
+.post-content code {
+  padding: 2px 6px;
+  background: var(--color-tag-bg);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+.post-content pre {
+  padding: 12px 16px;
+  background: var(--color-tag-bg);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  margin: 10px 0;
+}
+.post-content pre code {
+  padding: 0;
+  background: none;
+}
+.post-content blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding-left: 12px;
+  margin: 10px 0;
+  color: var(--color-text-secondary);
+}
+.post-content img {
+  max-width: 100%;
+  border-radius: var(--radius);
+  display: block;
+  margin: 12px auto;
+  transition: transform 0.2s;
+}
+
+/* 内容图片以小图展示，点击放大（表情小图不受影响） */
+.post-content img[src*="image.tgb.cn"] {
+  max-width: 280px;
+  max-height: 210px;
+  width: auto;
+  height: auto;
+  border: 1px solid var(--color-border);
+  cursor: zoom-in;
+}
+
+.post-content img[src*="image.tgb.cn"]:hover {
+  transform: scale(1.04);
+  border-color: var(--color-accent);
+}
+
+/* ===== 加载更多 ===== */
+.load-more-wrap {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.load-more-btn {
+  padding: 8px 28px;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.load-more-btn:hover {
+  background: var(--color-tag-bg);
+}
+
+.load-more-btn:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.feed-end {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin: 16px 0 4px;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 600px) {
+  .trade-card {
+    padding: 14px 16px;
+  }
+
+  .trade-detail-title {
+    font-size: 1.2rem;
+  }
+
+  .post-card {
+    padding: 12px 14px;
+  }
+}

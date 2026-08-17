@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>市场复盘 — 我的日记</title>
+  <title>市场复盘 · 连板天梯</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/market-review.css">
+  <link rel="stylesheet" href="css/market-review.css?v=5">
 </head>
 <body>
   <noscript>
     <div class="noscript-banner">
-      此网站需要 JavaScript 来渲染内容。请启用 JavaScript 后刷新页面。
+      此网站需要 JavaScript 来渲染复盘内容。请启用 JavaScript 后刷新页面。
     </div>
   </noscript>
 
-  <header class="site-header">
+  <header class="site-header mr-static-header">
     <div class="header-top">
       <h1 class="site-title">市场复盘</h1>
       <div class="header-actions">
         <a href="index.html" class="editor-link" title="返回日记">📔 日记</a>
+        <a href="cognition.html" class="editor-link" title="认知短文">🧠 认知</a>
+        <a href="trades.html" class="editor-link" title="实盘记录">💰 实盘</a>
         <a href="editor.html" class="editor-link" title="打开编辑器">✏️ 编辑</a>
         <button id="theme-toggle" class="theme-toggle" aria-label="切换暗色/亮色模式">
           <span class="theme-icon-light">☀️</span>
@@ -26,17 +28,9 @@
         </button>
       </div>
     </div>
-    <div class="header-controls">
-      <div class="review-nav">
-        <button id="nav-prev" class="nav-btn" title="前一天">◀</button>
-        <input type="date" id="date-picker" class="date-picker">
-        <button id="nav-next" class="nav-btn" title="后一天">▶</button>
-        <button id="nav-latest" class="nav-btn nav-btn-latest">最新</button>
-      </div>
-    </div>
   </header>
 
-  <main id="main-content" class="main-content">
+  <main class="main-content mr-main">
     <div id="loading" class="loading">
       <div class="spinner"></div>
       <p>加载中...</p>
@@ -47,16 +41,63 @@
       <code>python3 -m http.server 9898</code>
       <p>然后访问 <a href="http://localhost:9898/market-review.html">http://localhost:9898/market-review.html</a></p>
     </div>
-    <div id="review-container" style="display:none;"></div>
+
+    <div id="dashboard" style="display:none;">
+      <div id="mr-nav" class="mr-nav">
+        <button id="nav-prev" class="mr-nav-btn" aria-label="前一交易日">◀ 前一日</button>
+        <input type="date" id="nav-date" class="mr-date-input" aria-label="选择日期">
+        <button id="nav-next" class="mr-nav-btn" aria-label="后一交易日">后一日 ▶</button>
+        <button id="nav-latest" class="mr-nav-btn mr-nav-latest">最新</button>
+      </div>
+
+      <h2 id="mr-date" class="mr-date"></h2>
+
+      <div id="stat-tiles" class="stat-tiles"></div>
+
+      <div id="mr-note" class="mr-note" style="display:none;"></div>
+
+      <section class="mr-panel" aria-label="连板生态趋势">
+        <h3 class="panel-title">连板生态趋势<span class="panel-sub">全部交易日 · 拖动或滚轮缩放时间轴</span></h3>
+        <div id="board-trend" class="board-trend"></div>
+      </section>
+
+      <section class="mr-panel" aria-label="题材连板梯队">
+        <h3 class="panel-title">题材连板梯队</h3>
+        <div class="ladder-legend" aria-hidden="true">
+          <span class="legend-item"><span class="legend-swatch swatch-lv1"></span>首板</span>
+          <span class="legend-item"><span class="legend-swatch swatch-lv2"></span>2板</span>
+          <span class="legend-item"><span class="legend-swatch swatch-lv3"></span>3板</span>
+          <span class="legend-item"><span class="legend-swatch swatch-lv4"></span>4板</span>
+          <span class="legend-item"><span class="legend-swatch swatch-lv5"></span>5板</span>
+          <span class="legend-item"><span class="legend-swatch swatch-lv6"></span>6板</span>
+          <span class="legend-item"><span class="legend-swatch swatch-lv7p"></span>7板+（👑空间板）</span>
+        </div>
+        <div class="mr-filters">
+          <input type="search" id="mr-search" class="search-input" placeholder="搜索股票 / 题材...">
+          <button id="mr-only-lianban" class="tag-chip" aria-pressed="false">只看连板（≥2板）</button>
+        </div>
+        <div class="ladder-wrap">
+          <table id="ladder-table" class="ladder-table">
+            <caption class="visually-hidden">题材连板梯队：行=题材，列=连板数，单元格内为对应股票</caption>
+          </table>
+        </div>
+      </section>
+
+      <p class="mr-hint">数据来源：手动编辑 <code>data/market-review.json</code>（格式：<code>{records: [{date, note, stocks: [{code, name, theme, boards}]}]}</code>，每个交易日一条）。提示：点击列头聚焦该板层，点击题材聚焦该梯队。</p>
+    </div>
+
     <div id="no-data" class="no-results" style="display:none;">
       <p>暂无该日期的复盘数据</p>
     </div>
   </main>
 
   <footer class="site-footer">
-    <p>我的日记 — 市场复盘模块</p>
+    <p>我的日记 — 市场复盘模块 · 连板天梯</p>
   </footer>
 
-  <script src="js/market-review.js"></script>
+  <div id="chip-tooltip" class="chip-tooltip" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="js/market-review.js?v=8"></script>
 </body>
 </html>

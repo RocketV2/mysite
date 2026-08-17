@@ -51,6 +51,28 @@ CSS 自定义属性（`--color-*`, `--shadow-*`, `--radius`, `--max-width`）集
 
 `happy` | `sad` | `neutral` | `excited` | `anxious`
 
+## 市场复盘 · 连板天梯 (`market-review.html`)
+
+展示 A 股连板生态：核心视图是「题材 × 板数」矩阵表（行=题材按强度排序，列=1板..最高板，格内=股票 chip），上方为统计卡片和「连板生态趋势」ECharts 组合图（每天一列堆叠柱 = 首板~八板+各板层家数，柱段色 = 天梯表色阶；高度虚线叠加，dataZoom 左右滑动，标记线跟随当前选中日）。ECharts 走 jsdelivr CDN，图表颜色运行时从 CSS 变量读取（主题切换自动重绘）。
+
+- **数据格式**（`data/market-review.json`，每个交易日一条记录，按日期倒序）：`{records: [{date, note, stocks: [{code, name, theme, boards}]}]}`，题材分组、板层、排序全部由页面派生。默认显示最新交易日，头部粘性导航支持前一日/后一日/日期选择/最新
+- **晋级约定**：同一只票相邻两天同时出现时，boards 必须恰好 +1（晋级）；断板者当天不出现在列表中；boards ≥ 2 的票必须有前一日数据
+- **颜色编码**：板数位置为主、红色深浅为辅。首板中性描边 chip；2板→7板+ 使用 ordinal 红色色阶（7板及以上共用最高档），亮/暗两套色阶经调色板校验器验证，定义在 `css/market-review.css` 的 `--mr-lv-*` 变量
+- **缓存破坏约定**：改动 `market-review.css` / `market-review.js` 后必须同步递增 HTML 中 `?v=N` 版本参数（http.server 无 Cache-Control，浏览器会启发式缓存旧文件导致新 HTML + 旧 JS 报错）
+
+## 实盘记录 (`trades.html`)
+
+独立页面，展示淘股吧实盘选手的完整发帖记录（仅楼主发言）。列表 → 点击卡片 → 详情（hash 路由 `#/trade/<id>`）。
+
+- **数据目录**：`data/trades/`，一个详情页一个 JSON 文件。`index.json` 是列表元数据（`{records: [{id, title, author, source, startDate, lastPostDate, postCount, desc}]}`），`<id>.json` 是详情（`{id, title, author, source, mainPost: {time, content}, posts: [{time, content}]}`，posts 按时间升序）
+- **ID 约定**：`YYYY-MM-DD-<作者拼音>-<主题缩写>`（如 `2023-02-06-shuige-100w`），与日记条目 ID 风格一致
+- **内容渲染**：`content` 为抓取时已消毒的 HTML（剥离 script/iframe/on* 事件），直接 innerHTML；图片热链自 `image.tgb.cn`，点击打开 lightbox
+- **分页渲染**：详情页每批渲染 50 条（「加载更多」按钮），按年月插入分组标题
+- **筛选**：详情页支持月份下拉 + 起止日期范围筛选（AND 组合，可清除）；主帖固定置顶不参与筛选
+- **图片**：内容图（`image.tgb.cn`）以缩略图（≤280×210）展示，点击 lightbox 放大并加载 `_max` 高清版（失败回退缩略图）；表情小图（`css.tgb.cn`）保持原样
+- **抓取工具**：`tools/tgb-scrape/`（见该目录 README）。淘股吧匿名仅能取到前 ~3300 页回帖（更深页无内容返回），新增数据时需校验最早可见回帖时间 ≈ 帖子发布时间，确保楼主发言完整
+- **缓存破坏约定**：改动 `trades.css` / `trades.js` 后必须同步递增 `trades.html` 中 `?v=N` 版本参数
+
 ## Markdown 编辑器 (`editor.html`)
 
 独立页面，提供完整的日记编辑功能。
