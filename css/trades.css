@@ -302,3 +302,64 @@
     padding: 12px 14px;
   }
 }
+
+/* ===== 详情页阅读模式：正常 / 护眼 ===== */
+
+/* 护眼模式配色（豆沙绿），仅在详情视图启用，作用于整个页面 */
+html.eye-care {
+  --color-bg: #dce8db;
+  --color-surface: #e9f1e6;
+  --color-text: #333333;
+  --color-text-secondary: #5f6f5f;
+  --color-border: #c4d3c0;
+  --color-accent: #3f7a4f;
+  --color-accent-hover: #356a43;
+  --color-tag-bg: #cfe0cb;
+  --color-tag-text: #3f7a4f;
+  --color-tag-active-bg: #3f7a4f;
+  --color-tag-active-text: #ffffff;
+  --color-muted: #8a9a88;
+  --shadow-card: 0 1px 3px rgba(63, 90, 60, 0.10);
+  --shadow-card-hover: 0 2px 8px rgba(63, 90, 60, 0.16);
+}
+
+.trade-detail-head-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.eye-mode-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.eye-mode-btn {
+  padding: 4px 14px;
+  font-size: 0.82rem;
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.eye-mode-btn + .eye-mode-btn {
+  border-left: 1px solid var(--color-border);
+}
+
+.eye-mode-btn.active {
+  background: var(--color-tag-active-bg);
+  color: var(--color-tag-active-text);
+}
+
+@media print {
+  .eye-mode-toggle {
+    display: none !important;
+  }
+}

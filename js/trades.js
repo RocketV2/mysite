@@ -20,6 +20,7 @@
   var shownCount = 0;     // 已渲染的帖子数
   var loaded = false;     // index 是否已加载
   var filter = { month: "", start: "", end: "" }; // 月份/时间范围筛选
+  var eyeCare = localStorage.getItem("trades_eye_care") === "on"; // 详情页护眼模式
 
   // ===== 主题 =====
   function initTheme() {
@@ -39,10 +40,43 @@
       document.documentElement.classList.add("light");
       localStorage.setItem("theme", "light");
     } else {
+      // 切到暗色时关闭护眼模式（两者互斥）
+      setEyeCare(false);
       document.documentElement.classList.add("dark");
       document.documentElement.classList.remove("light");
       localStorage.setItem("theme", "dark");
     }
+  }
+
+  // 护眼模式：与暗色模式互斥，仅在详情视图生效
+  function setEyeCare(on) {
+    eyeCare = on;
+    localStorage.setItem("trades_eye_care", on ? "on" : "off");
+    if (on) {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      localStorage.setItem("theme", "light");
+    }
+    applyEyeCareClass();
+    updateEyeCareUI();
+  }
+
+  function applyEyeCareClass() {
+    var active = eyeCare && $detailView.style.display === "block";
+    document.documentElement.classList.toggle("eye-care", active);
+    if (active && document.documentElement.classList.contains("dark")) {
+      // 进入详情时护眼优先，强制落到亮色类（避免暗色图标与绿色页面不一致）
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      localStorage.setItem("theme", "light");
+    }
+  }
+
+  function updateEyeCareUI() {
+    var $normal = document.getElementById("eye-normal");
+    var $care = document.getElementById("eye-care");
+    if ($normal) $normal.classList.toggle("active", !eyeCare);
+    if ($care) $care.classList.toggle("active", eyeCare);
   }
 
   // ===== 工具 =====
@@ -132,6 +166,7 @@
     $error.style.display = "none";
     $detailView.style.display = "none";
     $listView.style.display = "block";
+    applyEyeCareClass(); // 列表视图不启用护眼模式
 
     if (!indexRecords.length) {
       $tradeList.innerHTML = '<div class="no-results"><p>暂无实盘记录</p></div>';
@@ -189,7 +224,12 @@
 
     $detailBody.innerHTML =
       '<div class="trade-detail-head">' +
+      '<div class="trade-detail-head-top">' +
       '<h2 class="trade-detail-title">' + esc(current.title) + "</h2>" +
+      '<div class="eye-mode-toggle" role="group" aria-label="阅读模式">' +
+      '<button id="eye-normal" class="eye-mode-btn" title="正常模式">正常</button>' +
+      '<button id="eye-care" class="eye-mode-btn" title="护眼模式">护眼</button>' +
+      "</div></div>" +
       '<div class="trade-detail-meta">' +
       '<span class="trade-author">' + esc(current.author) + "</span>" +
       (first ? "<span>首发 " + esc(fmtDate(first)) + "</span>" : "") +
@@ -207,6 +247,8 @@
       '<div class="load-more-wrap"><button id="load-more" class="load-more-btn" style="display:none;">加载更多</button></div>' +
       '<div id="feed-end" class="feed-end" style="display:none;">— 已到尽头 —</div>';
 
+    applyEyeCareClass();
+    updateEyeCareUI();
     applyFilter();
   }
 
@@ -354,8 +396,14 @@
   });
 
   $detailBody.addEventListener("click", function (e) {
-    if (e.target && e.target.id === "filter-clear") {
+    var t = e.target;
+    if (!t || !t.id) return;
+    if (t.id === "filter-clear") {
       clearFilters();
+    } else if (t.id === "eye-normal") {
+      setEyeCare(false);
+    } else if (t.id === "eye-care") {
+      setEyeCare(true);
     }
   });
 
